@@ -1,0 +1,27 @@
+.inputContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--inputBoxColor);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.inputBox {
+    flex: 1;
+    border: none;
+    border-color: red;
+}
+
+.sendIconWrapper {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 100px !important;
+    background-color: var(--green) !important;
+    margin: 0 10px !important;
+}

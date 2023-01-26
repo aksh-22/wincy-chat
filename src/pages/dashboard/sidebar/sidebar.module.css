@@ -1,0 +1,120 @@
+.sidebar {
+    background-color: var(--sidebarColor) !important;
+    /* height: 100vh; */
+    overflow: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.sidebarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--sidebarColor);
+}
+
+.popper {
+    padding: 20px;
+    background-color: var(--sidebarColor);
+    backdrop-filter: blur(3px);
+}
+
+.list {
+    background-color: var(--sidebarColor) !important;
+    position: relative;
+    padding: 0 !important;
+}
+
+.badge {
+    background: #02cd79;
+    padding: 5px;
+    position: absolute;
+    right: 10px;
+    top: 40px;
+    bottom: 60px;
+    border-radius: 10px;
+    height: 10px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--sidebarColor);
+}
+
+.accordionItem {
+    flex: 1;
+}
+
+.addIconWrapper {
+    width: 50px;
+    background-color: var(--sidebarColor);
+}
+
+.addIcon {
+    position: absolute;
+    right: 10px;
+    z-index: 10;
+    top: 0;
+}
+
+.listItem {
+    padding: 5px;
+    border-radius: 10px;
+    margin: 5px 0;
+}
+
+.listItem:hover {
+    background-color: var(--background) !important;
+}
+
+.selectedListItem {
+    background-color: var(--background) !important;
+}
+
+.notSelectedListItem {
+    background-color: var(--sidebarColor) !important;
+}
+
+.addListItem {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center;
+    flex: 1;
+}
+
+.iconWrapper {
+    margin: 10px 0;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+.iconWrapper div {
+    font-size: 15px;
+}
+
+.iconWrapperActive {
+    background-color: var(--background);
+}
+
+.channelNameRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+}
+
+.purpleBadges {
+    background: #625df5;
+    display: flex;
+    height: 25px;
+    width: 25px;
+    align-items: center;
+    border-radius: 50%;
+    justify-content: center;
+}

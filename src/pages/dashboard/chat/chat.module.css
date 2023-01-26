@@ -1,0 +1,124 @@
+.header {
+    background-color: var(--background);
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    padding-top: 20px;
+    box-shadow: 0px 4px 9px rgba(0, 0, 0, 0.43);
+}
+
+.container {
+    background-color: var(--background);
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    overflow: hidden;
+    position: relative;
+    justify-content: flex-start;
+    /* background-color: red; */
+}
+
+.chatArea {
+    display: flex;
+    height: 80vh !important;
+}
+
+.chatArea::-webkit-scrollbar {
+    display: none;
+}
+
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+.messageItem {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    /* margin-bottom: 10px; */
+}
+
+.messageItem .row {
+    /* padding: 10px; */
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 15px;
+}
+
+.messageItem .left {
+    display: flex;
+    align-items: center;
+}
+
+.messageItem .details {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+}
+
+.messageItem .content {
+    padding: 5px 10px;
+    letter-spacing: 1px;
+    word-spacing: 1px;
+    font-weight: 300;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+}
+
+.messageItem .contentWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 20px;
+    padding: 5px 0;
+}
+
+.contentWrapper .time {
+    opacity: 0;
+    margin-left: 10px;
+}
+
+.messageItem .contentWrapper:hover .time {
+    opacity: 0.5;
+}
+
+.messageItem .content:hover {
+    background-color: var(--hoverColor);
+    border-radius: 10px;
+}
+
+.dayDiv {
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.dayDiv:after {
+    content: '';
+    width: 100%;
+    border-bottom: solid 1px #514f7a;
+    position: absolute;
+}
+.dayDiv span {
+    color: #fff;
+    font-size: 12px;
+    border: 1px solid #514f7a;
+    padding: 6px 20px;
+    border-radius: 50px;
+    text-transform: capitalize;
+    background: #171b34;
+    z-index: 1;
+}
+
+.chatHeader {
+    height: 10vh;
+    background-color: var(--sidebarColor);
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}

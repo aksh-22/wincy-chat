@@ -1,0 +1,19 @@
+.rightComponent {
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: var(--background);
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 0.3fr 1fr;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}

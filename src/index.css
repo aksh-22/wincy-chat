@@ -1,0 +1,32 @@
+:root {
+    --background: #171b34;
+    --hoverColor: #22274b;
+    --inputBoxColor: #404777;
+    --blue: #00b;
+    --sidebarColor: #22274b;
+    --yellow: #a77b37;
+    --activeText: #7782b6;
+    --nonActiveText: #6c7571;
+    --white: '#fff';
+    --green: #02cd79;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+        'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+        'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
+}
