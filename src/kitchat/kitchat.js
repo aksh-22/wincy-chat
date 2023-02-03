@@ -1,9 +1,13 @@
 import { io } from 'socket.io-client';
 import store from '../redux/store';
+import axios from 'axios';
 
 // const url = 'https://kitchat-backend.cyclic.app/';
-const url = 'http://192.168.1.35:3002';
+// const url = 'http://13.232.191.64:3002';
+const url = 'http://192.168.1.48:3002';
 // const url = 'https://kind-cod-shift.cyclic.app/';
+
+// 6384adb2cd1f0cb2acf9a0fe
 
 const SERVER_URL = url;
 const SERVER_URL_SOCKET = url;
@@ -18,11 +22,14 @@ export class KitChat {
     channelSelectionHandler;
     channelMessageHandler;
     channelAdded;
+    channelMessageDeleteHandler = [];
+    channelMessageUpdateHandler = [];
     channelUpdate = [];
     channelDelete = [];
     messageCount = [];
     userId;
     teamId = 'PAIRROXZ';
+    isSetupCompleted = false;
 
     constructor(apiKey) {
         this.apiKey = apiKey;
@@ -36,7 +43,7 @@ export class KitChat {
         return this.instance;
     }
 
-    async __standardRest(endpoint, method, body) {
+    async __standardRest(endpoint, method, body, isFormData = false) {
         const exemptedEndpoints = 'user/connect';
         if (!exemptedEndpoints.includes(endpoint)) {
             if (this.userToken == null) {
@@ -51,11 +58,13 @@ export class KitChat {
             method,
             headers: {
                 Accept: 'application/json, text/plain, */*',
-                'Content-Type': 'application/json',
+                'Content-Type': isFormData
+                    ? `application/x-www-form-urlencoded`
+                    : 'application/json',
                 Authorization: `Bearer ${this.userToken}`,
                 'x-api-key': this.apiKey,
             },
-            body: JSON.stringify(body),
+            body: isFormData ? new URLSearchParams(body) : JSON.stringify(body),
         });
 
         if (![200, 201, 202].includes(response.status)) {
@@ -90,12 +99,22 @@ export class KitChat {
                     type: 'UPDATE_USER_ID',
                     payload: data.user.userId,
                 });
+                // store.dispatch({
+                //     type: 'LOGGED_IN',
+                //     payload: true,
+                // });
                 this.__setupSocket();
             }
+            this.isSetupCompleted = true;
             return data;
         } catch (error) {
             console.error('Error at Kitchat Init:', error.message);
         }
+    }
+
+    removeAllListeners() {
+        this.socket.removeAllListeners();
+        this.socket = null;
     }
 
     __setupSocket() {
@@ -107,8 +126,22 @@ export class KitChat {
                     this.channelMessageHandler(message);
                 }
             });
+            this.socket.on('MESSAGE_DELETE', (message) => {
+                if (this.channelMessageDeleteHandler.length) {
+                    this.channelMessageDeleteHandler.forEach((el) => {
+                        el(message);
+                    });
+                }
+            });
+            this.socket.on('MESSAGE_UPDATE', (message) => {
+                if (this.channelMessageUpdateHandler.length) {
+                    this.channelMessageUpdateHandler.forEach((el) => {
+                        el(message);
+                    });
+                }
+            });
             this.socket.on('CHANNEL_DELETE', (channel) => {
-                if (this.channelDelete != null) {
+                if (this.channelDelete.length) {
                     this.channelDelete.forEach((el) => el(channel));
                     this.socket.emit('LEAVE_ROOM', channel._id);
                     // this.socket.off('MESSAGE_RECEIVED');
@@ -149,6 +182,14 @@ export class KitChat {
         this.channelAdded = func;
     }
 
+    onChannelMessageDelete(func) {
+        this.channelMessageDeleteHandler.push(func);
+    }
+
+    onChannelMessageUpdate(func) {
+        this.channelMessageUpdateHandler.push(func);
+    }
+
     onChannelUpdate(func) {
         this.channelUpdate.push(func);
     }
@@ -170,9 +211,48 @@ export class KitChat {
             return data;
         } catch (error) {
             console.error(
-                'Error at Kitchat __updateOneSignalIds:',
+                'Error at Kitchat updateOneSignalIds:',
                 error.message
             );
+        }
+    }
+
+    async removeOneSignalIds(deviceId) {
+        try {
+            const data = await this.__standardRest(
+                `notification/${deviceId}`,
+                'DELETE'
+            );
+            return data;
+        } catch (error) {
+            console.error(
+                'Error at Kitchat removeOneSignalIds:',
+                error.message
+            );
+        }
+    }
+
+    async deleteChannel(channelId) {
+        try {
+            const data = await this.__standardRest(
+                `chat/channel/delete/${channelId}`,
+                'DELETE'
+            );
+            return data;
+        } catch (error) {
+            console.error('Error at Kitchat deleteChannel:', error.message);
+        }
+    }
+
+    async deleteMessage(channelId, messageId) {
+        try {
+            const data = await this.__standardRest(
+                `chat/message/delete/${channelId}/${messageId}`,
+                'DELETE'
+            );
+            return data;
+        } catch (error) {
+            console.error('Error at Kitchat deleteChannel:', error.message);
         }
     }
 
@@ -305,6 +385,22 @@ export class KitChat {
         }
     }
 
+    async channelMuteHandler(channelId) {
+        try {
+            const data = await this.__standardRest(
+                `chat/channel/mute/${channelId}`,
+                'PATCH'
+            );
+            // await this.getChannels();
+            return data;
+        } catch (error) {
+            console.error(
+                'Error at Kitchat channelMuteHandler:',
+                error.message
+            );
+        }
+    }
+
     async channelSelect(channelId) {
         try {
             const channel = [
@@ -392,6 +488,18 @@ export class KitChat {
         }
     }
 
+    async setCurrentChannel(channelId) {
+        try {
+            const data = await this.__standardRest(
+                `user/currentChannel/${channelId}`,
+                'GET'
+            );
+            return data;
+        } catch (error) {
+            console.error('Error at Kitchat setCurrentChannel', error.message);
+        }
+    }
+
     async readMessage(channelId) {
         try {
             const data = await this.__standardRest(
@@ -438,30 +546,74 @@ export class KitChat {
         }
     }
 
-    async messageAdd(channel, content) {
+    async messageAdd(body) {
+        const config = {
+            headers: {
+                Accept: 'application/json, text/plain, */*',
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${this.userToken}`,
+                'x-api-key': this.apiKey,
+            },
+        };
         try {
-            const data = await this.__standardRest(
-                `chat/channel/message/add`,
-                'POST',
-                {
-                    channelId: channel._id,
-                    content,
-                }
+            const data = await axios.post(
+                `${SERVER_URL}/chat/channel/message/add`,
+                body,
+                config
             );
-            // if (channel.type === 'CHANNEL_PUBLIC') {
-            //     this.socket
-            //         .to(`TEAM-${channel.teamId}`)
-            //         .emit('CHANNEL_CHANGE', channel, channel.type);
-            // } else {
-            //     channel.participants.forEach((element) => {
-            //         this.socket
-            //             .to(`USER-${element._id}`)
-            //             .emit('CHANNEL_CHANGE', channel, channel.type);
-            //     });
-            // }
+            // const data = await this.__standardRest(
+            //     `chat/channel/message/add`,
+            //     'POST',
+            //     body,
+            //     true
+            // );
             return data;
         } catch (error) {
             console.error('Error at Kitchat messageAdd:', error.message);
+        }
+    }
+
+    async addAttachments(body) {
+        const config = {
+            headers: {
+                Accept: 'application/json, text/plain, */*',
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${this.userToken}`,
+                'x-api-key': this.apiKey,
+            },
+        };
+        try {
+            const data = await axios.post(
+                `${SERVER_URL}/chat/channel/message/upload/attachment`,
+                body,
+                config
+            );
+            // const data = await this.__standardRest(
+            //     `chat/channel/message/add`,
+            //     'POST',
+            //     body,
+            //     true
+            // );
+            return data;
+        } catch (error) {
+            console.error('Error at Kitchat messageAdd:', error.message);
+        }
+    }
+
+    async messageUpdate(channelId, messageId, content) {
+        try {
+            const data = await this.__standardRest(
+                `chat/channel/message/update`,
+                'POST',
+                {
+                    channelId,
+                    content,
+                    messageId,
+                }
+            );
+            return data;
+        } catch (error) {
+            console.error('Error at Kitchat messageUpdate:', error.message);
         }
     }
 }

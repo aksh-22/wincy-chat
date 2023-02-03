@@ -5,15 +5,7 @@ import { KitChat } from '../../../kitchat/kitchat';
 import ChannelList from './list/ChannelList';
 import classes from './sidebar.module.css';
 
-const init = false;
-
-const Sidebar = ({
-    onCreateDirectMsg,
-    onChange,
-    onCreateChannel,
-    selectedChannel,
-    open,
-}) => {
+const Sidebar = ({ onCreateDirectMsg, onCreateChannel, open }) => {
     const [groupChannels, setGroupChannels] = useState([]);
     const [directChannels, setDirectChannels] = useState([]);
 
@@ -33,8 +25,11 @@ const Sidebar = ({
                     tempGroupsChannels.push(el);
                 }
             });
-            setGroupChannels(tempGroupsChannels);
-            setDirectChannels(tempDirectChannels);
+            setGroupChannels([...tempGroupsChannels]);
+            setDirectChannels([...tempDirectChannels]);
+        } else {
+            setGroupChannels([]);
+            setDirectChannels([]);
         }
     }, [channelList]);
 
@@ -45,67 +40,15 @@ const Sidebar = ({
     };
 
     const onChannelAdd = (channel) => {
-        if (channel.type === 'DIRECT') {
-            setDirectChannels((prev) => {
-                const temp = prev;
-                temp.unshift(channel);
-                return [...temp];
-            });
-        } else {
-            setGroupChannels((prev) => {
-                const temp = prev;
-                temp.unshift(channel);
-                return [...temp];
-            });
-        }
+        dispatch({ type: 'ADD_CHANNEL', payload: channel });
     };
 
     const onChannelUpdate = (channel) => {
-        if (channel.type === 'DIRECT') {
-            setDirectChannels((prev) => {
-                let temp = prev;
-                const index = temp.findIndex((el) => el._id === channel._id);
-                if (index === -1) {
-                    temp = [channel, ...temp];
-                } else {
-                    temp[index] = channel;
-                }
-
-                return temp;
-            });
-        } else {
-            setGroupChannels((prev) => {
-                let temp = [];
-                if (prev.length) {
-                    temp = [...prev];
-                }
-                const index = temp.findIndex((el) => el._id === channel._id);
-                if (index === -1) {
-                    temp = [channel, ...temp];
-                } else {
-                    temp[index] = channel;
-                }
-                return temp;
-            });
-        }
+        dispatch({ type: 'UPDATE_CHANNEL', payload: channel });
     };
 
     const onChannelDelete = (channel) => {
-        if (channel.type === 'DIRECT') {
-            setDirectChannels((prev) => {
-                let temp = prev;
-                const index = temp.findIndex((el) => el._id === channel._id);
-                temp.splice(index, 1);
-                return [...temp];
-            });
-        } else {
-            setGroupChannels((prev) => {
-                let temp = prev;
-                const index = temp.findIndex((el) => el._id === channel._id);
-                temp.splice(index, 1);
-                return [...temp];
-            });
-        }
+        dispatch({ type: 'REMOVE_CHANNEL_FROM_LIST', payload: channel._id });
     };
 
     const onChannelMessageCountCHange = (channel) => {
@@ -143,16 +86,12 @@ const Sidebar = ({
                         onIconPress={onCreateChannel}
                         data={groupChannels}
                         heading='Groups'
-                        onChange={onChange}
-                        selectedChannel={selectedChannel}
                     />
                     <ChannelList
                         open={open}
                         onIconPress={onCreateDirectMsg}
                         data={directChannels}
                         heading='Direct'
-                        onChange={onChange}
-                        selectedChannel={selectedChannel}
                     />
                 </div>
             </nav>

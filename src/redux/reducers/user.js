@@ -8,6 +8,7 @@ const initialState = {
     isModuleSelected: [],
     userId: '',
     deviceId: '',
+    isLoggedIn: false,
 };
 const userReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -88,6 +89,12 @@ const userReducer = (state = initialState, action) => {
             return {
                 ...state,
                 deviceId: action.payload,
+            };
+
+        case 'LOGGED_IN':
+            return {
+                ...state,
+                isLoggedIn: action.payload,
             };
         default:
             return state;

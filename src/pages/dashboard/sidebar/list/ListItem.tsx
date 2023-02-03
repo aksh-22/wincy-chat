@@ -12,18 +12,10 @@ import classes from './../sidebar.module.css';
 type Props = {
     channel: any;
     open: boolean;
-    onChange: (data: any) => void;
     userId: string;
-    selectedChannel: any;
 };
 
-const CustomListItem = ({
-    channel,
-    open,
-    // onChange,
-    userId,
-}: // selectedChannel,
-Props) => {
+const CustomListItem = ({ channel, open, userId }: Props) => {
     const [count, setCount] = useState(0);
 
     const selectedChannel = useSelector(
@@ -31,6 +23,8 @@ Props) => {
     );
 
     const dispatch = useDispatch();
+
+    // const setSelectedChannel = ()=>{}
 
     const onChange = (payload: any) => {
         dispatch({ type: 'SET_CHANNEL', payload });

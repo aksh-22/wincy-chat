@@ -1,10 +1,21 @@
 import { Logout as LogoutIcon } from '@mui/icons-material/';
 import { CircularProgress, Grid, IconButton, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { KitChat } from '../../../../kitchat/kitchat';
 import { useLogout } from '../../../../react-query/auth/useLogout';
 import classes from './../sidebar.module.css';
 
-const UserDetails = ({ name, profilePicture, email }) => {
+const UserDetails = ({ name, email }: any) => {
     const { isLoading, mutate } = useLogout();
+    const deviceId = useSelector((state: any) => state.userReducer.deviceId);
+
+    const onLogout = async () => {
+        const kc = KitChat.getInstance();
+        kc.removeOneSignalIds(deviceId).then(() => {
+            kc.removeAllListeners();
+            mutate();
+        });
+    };
 
     return (
         <Grid className={classes.popper} container sx={{ pb: 5, pt: 2 }}>
@@ -14,7 +25,7 @@ const UserDetails = ({ name, profilePicture, email }) => {
             </Grid>
             <Grid>
                 <IconButton
-                    onClick={mutate}
+                    onClick={onLogout}
                     disabled={isLoading}
                     aria-label='delete'
                     color='primary'

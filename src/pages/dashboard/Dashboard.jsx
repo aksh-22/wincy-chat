@@ -1,15 +1,15 @@
+import Box from '@mui/material/Box';
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
+import useOneSignal from '../../hooks/useOneSignal';
 import { KitChat } from './../../kitchat/kitchat';
 import ChannelModal from './channelModal/ChannelModal';
 import DirectChannelModal from './channelModal/DirectMsgCreateModal';
 import Chat from './chat/Chat';
 import classes from './dashboard.module.css';
-import Sidebar from './sidebar/Sidebar';
-import Box from '@mui/material/Box';
 import SidebarHeader from './sidebar/header/SidebarHeader';
+import Sidebar from './sidebar/Sidebar';
 import UserDetails from './sidebar/userDetails/UserDetails';
-import useOneSignal from '../../hooks/useOneSignal';
 
 function Dashboard() {
     const [isLoaded, setIsLoaded] = useState(false);
@@ -22,39 +22,24 @@ function Dashboard() {
 
     const { init } = useOneSignal();
 
-    const dispatch = useDispatch();
-
     const userInfo = useSelector((state) => state.userReducer.userData);
 
-    const channel = useSelector(
-        (state) => state.channelReducer?.selectedChannel
+    const selectedChannel = useSelector(
+        (state) => state.channelReducer.selectedChannel
     );
 
     const { email, name, profilePicture } = userInfo.user;
     const [firstName, lastName] = name.split(' ');
 
-    const onChannelUpdate = (updatedChannel) => {
-        dispatch({ type: 'UPDATE_CHANNEL', payload: updatedChannel });
-    };
-
-    const onChannelDelete = (deleteChannel) => {
-        if (channel?._id === deleteChannel._id) {
-            dispatch({ type: 'SET_CHANNEL', payload: null });
-            setShowChannelModal(false);
-        }
-    };
-
     async function asyncFunc() {
         let kc = KitChat.getInstance();
-        const data = await kc
+        await kc
             .init(email, firstName, lastName, profilePicture)
             .finally(() => {
                 setLoading(false);
             });
-        data.userToken && setIsLoaded(true);
+        setIsLoaded(kc.isSetupCompleted);
         setLoading(false);
-        kc.onChannelUpdate(onChannelUpdate);
-        kc.onChannelDelete(onChannelDelete);
         init();
     }
 
@@ -64,8 +49,10 @@ function Dashboard() {
 
     return (
         <>
-            {loading ? (
-                <div>Please Wait</div>
+            {loading && !isLoaded ? (
+                <div className={classes.container}>
+                    <div>Please Wait</div>
+                </div>
             ) : (
                 <div className={classes.dashboard}>
                     <div>
@@ -80,17 +67,12 @@ function Dashboard() {
                                 profilePicture={profilePicture}
                             />
                             {showUserDetails && open && (
-                                <UserDetails
-                                    email={email}
-                                    name={name}
-                                    profilePicture={profilePicture}
-                                />
+                                <UserDetails email={email} name={name} />
                             )}
                         </div>
                         <Sidebar
                             open={open}
                             onMenuPress={() => setOpen((prev) => !prev)}
-                            selectedChannel={channel}
                             onCreateChannel={() => {
                                 setShowChannelModal(true);
                                 setEditChannelMode(false);
@@ -99,18 +81,15 @@ function Dashboard() {
                         />
                         {/* <Divider /> */}
                     </div>
-                    <Box sx={{ flexGrow: 1 }}>
+                    <Box sx={{ flexGrow: 1, position: 'relative' }}>
                         {!loading && (
                             <>
-                                {channel?._id ? (
+                                {selectedChannel?._id ? (
                                     <Chat
                                         onChannelNamePress={() => {
-                                            if (channel.type != 'DIRECT') {
-                                                setShowChannelModal(true);
-                                                setEditChannelMode(true);
-                                            }
+                                            setShowChannelModal(true);
+                                            setEditChannelMode(true);
                                         }}
-                                        // channel={channel}
                                     />
                                 ) : (
                                     <div className={classes.container}>
@@ -124,7 +103,6 @@ function Dashboard() {
                                     open={showChannelModal}
                                     onClose={() => setShowChannelModal(false)}
                                     edit={editChannelMode}
-                                    channel={channel}
                                 />
                                 <DirectChannelModal
                                     open={showDirectModal}

@@ -1,12 +1,23 @@
-.inputContainer {
-    display: flex;
+.inputMainContainer {
+    /* display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; */
     background-color: var(--inputBoxColor);
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
+}
+
+.inputContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* background-color: var(--inputBoxColor);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0; */
 }
 
 .inputBox {

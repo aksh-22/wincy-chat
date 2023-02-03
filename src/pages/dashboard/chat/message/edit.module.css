@@ -1,0 +1,26 @@
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; */
+}
+
+.buttonArea {
+    align-self: flex-end;
+    margin-top: 10px;
+}
+
+.inputBox {
+    flex: 1;
+    border: none;
+}
+
+.sendIconWrapper {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 100px !important;
+    background-color: var(--green) !important;
+    margin: 0 10px !important;
+}

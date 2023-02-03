@@ -10,18 +10,20 @@ import {
 } from '@mui/material';
 import Button from '../../components/Button';
 import { useLogin } from '../../react-query/auth/useLogin';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 export default function SignIn() {
     const { error: err, mutate, isLoading } = useLogin();
     const navigate = useNavigate();
     const userInfo = useSelector((state) => state.userReducer.userData);
+    const dispatch = useDispatch();
     useEffect(() => {
         if (userInfo?.token) {
-            navigate('/dashboard');
+            dispatch({ type: 'LOGGED_IN', payload: true });
+            // navigate('/dashboard');
         }
-    }, [userInfo?.token, navigate]);
+    }, [userInfo?.token]);
 
     const handleSubmit = (event) => {
         event.preventDefault();

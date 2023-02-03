@@ -1,0 +1,73 @@
+.dropContainer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--backdrop);
+    /* background-color: red; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    align-self: center;
+    backdrop-filter: blur(3px);
+    flex-direction: column;
+    padding: 0 20px;
+}
+
+.input {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    position: absolute;
+}
+
+.inputHover {
+    border: 1px dotted #fff;
+    width: 100%;
+    height: 100px;
+    margin: 0 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: scale ease-in 0.4s;
+    transform: scale(1.1);
+}
+
+.inputContainer {
+    border: 1px dotted #fff;
+    width: 100%;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: scale ease-in 0.4s;
+    transform: scale(1);
+}
+
+.filesArea {
+    display: flex;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.fileImageWrapper {
+    position: relative;
+}
+
+.fileImage {
+    width: 40px;
+    height: 40px;
+    margin-right: 20px;
+    border-radius: 10px;
+}
+
+.removeIconWrapper {
+    position: absolute;
+    right: 0px;
+    top: -20px;
+}

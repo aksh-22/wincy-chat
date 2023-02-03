@@ -12,6 +12,8 @@ const initialState: Props = {
     groupChannels: [],
 };
 const channelReducer = (state = initialState, action: any) => {
+    let index;
+    let tempChannelList = [];
     switch (action.type) {
         case 'SET_CHANNEL':
             return {
@@ -19,31 +21,51 @@ const channelReducer = (state = initialState, action: any) => {
                 selectedChannel: action.payload,
             };
 
+        case 'ADD_CHANNEL':
+            return {
+                ...state,
+                channelList: [action.payload, ...state.channelList],
+            };
+
         case 'UPDATE_CHANNEL':
-            const channelListUpdated = state.channelList.map((el) => {
-                if (el._id === action.payload._id) {
-                    return action.payload;
-                } else {
-                    return el;
-                }
-            });
-
-            let tempSelectedChannel = state.selectedChannel;
-
-            if (tempSelectedChannel._id === action.payload._id) {
-                tempSelectedChannel = action.payload;
+            tempChannelList = state.channelList;
+            index = tempChannelList.findIndex(
+                (el) => el._id === action.payload._id
+            );
+            if (index === -1) {
+                tempChannelList.unshift(action.payload);
+            } else {
+                tempChannelList[index] = action.payload;
+            }
+            if (state?.selectedChannel?._id === action.payload._id) {
+                state.selectedChannel = action.payload;
             }
 
             return {
                 ...state,
-                channelList: channelListUpdated,
-                selectedChannel: tempSelectedChannel,
+                channelList: [...tempChannelList],
+                selectedChannel: state.selectedChannel,
             };
 
         case 'CHANNEL_LIST':
             return {
                 ...state,
                 channelList: action.payload,
+            };
+
+        case 'REMOVE_CHANNEL_FROM_LIST':
+            tempChannelList = state.channelList;
+            index = tempChannelList.findIndex(
+                (el) => el._id === action.payload
+            );
+            tempChannelList.splice(index, 1);
+            return {
+                ...state,
+                channelList: [...tempChannelList],
+                selectedChannel:
+                    state?.selectedChannel?._id === action.payload
+                        ? null
+                        : state.selectedChannel,
             };
 
         case 'UPDATE_COUNT':
@@ -58,9 +80,19 @@ const channelReducer = (state = initialState, action: any) => {
                 }
             });
 
+            let tempSelectedChannel = { ...state?.selectedChannel };
+
+            if (state?.selectedChannel?._id === action.payload._id) {
+                tempSelectedChannel = {
+                    ...tempSelectedChannel,
+                    participantsDetails: action.payload.participantsDetails,
+                };
+            }
+
             return {
                 ...state,
                 channelList: channelListWithUpdateCount,
+                selectedChannel: tempSelectedChannel,
             };
 
         default:

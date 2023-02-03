@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import CustomAccordion from '../../../../components/accordion/Accordion';
 import CustomListItem from './ListItem';
 
-const ChannelList = ({ data, onChange, heading, onIconPress, open }) => {
+const ChannelList = ({ data, heading, onIconPress, open }) => {
     const userId = useSelector((state) => state.userReducer.userId);
 
     return (
@@ -27,7 +27,6 @@ const ChannelList = ({ data, onChange, heading, onIconPress, open }) => {
                             <CustomListItem
                                 key={index}
                                 channel={channel}
-                                onChange={onChange}
                                 open={open}
                                 userId={userId}
                             />

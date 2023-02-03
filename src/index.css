@@ -1,3 +1,5 @@
+@import '~react-image-gallery/styles/css/image-gallery.css';
+
 :root {
     --background: #171b34;
     --hoverColor: #22274b;
@@ -7,8 +9,10 @@
     --yellow: #a77b37;
     --activeText: #7782b6;
     --nonActiveText: #6c7571;
-    --white: '#fff';
+    --white: #fff;
     --green: #02cd79;
+    --backdrop: #0000005d;
+    --backdrop2: #000000cb;
 }
 
 * {

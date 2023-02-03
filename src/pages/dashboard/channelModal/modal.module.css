@@ -2,3 +2,8 @@
     margin-top: 20px;
     background-color: var(--background) !important;
 }
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+}
