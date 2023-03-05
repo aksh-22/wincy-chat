@@ -1,33 +1,46 @@
-import React from 'react';
-import { IconButton } from '@mui/material';
 import FileOpenIcon from '@mui/icons-material/FileOpen';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import classes from './attachment.module.css';
+import { IconButton } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { generateVideoThumbnails } from '../../hooks/video-thumbnail/generateVideoThumbnails';
 import getFileType from '../../utils/getFileType';
+import classes from './attachment.module.css';
 
 type Props = {
     onClick: (index: number) => void;
     onImageClick: (index: number) => void;
-    data: any;
+    data: { original: string; thumbnail: string } | any;
     index: number;
 };
 
 const Attachment = ({ onClick, data, index, onImageClick }: Props) => {
-    console.log('data', data);
-    let fileType: 'image' | 'video' | 'audio' | 'other' | undefined = 'image';
+    let fileType: 'image' | 'video' | 'audio' | 'other' | undefined =
+        getFileType(data);
+    const [src, setSrc] = useState(data);
+    const getData = async () => {
+        const thumb: any = await generateVideoThumbnails(src, 1);
+        console.log('thumb', thumb);
+        //  src = URL.createObjectURL(data);
+        setSrc(URL.createObjectURL(thumb));
+    };
+
     // getFileType(data);
 
-    let src: any;
+    // let src: any;
 
-    if (typeof data === 'string') {
-        src = data;
-    } else {
-        src = URL.createObjectURL(data);
+    useEffect(() => {
+        fileType === 'video' && getData();
+    }, [data]);
+
+    if (typeof data?.thumbnail === 'string') {
+        // src = data.thumbnail;
+        setSrc(data.thumbnail);
     }
 
     const renderItem = () => {
         switch (fileType) {
             case 'image':
+            case 'video':
                 return (
                     <img
                         onClick={() => onImageClick(index)}
@@ -37,8 +50,9 @@ const Attachment = ({ onClick, data, index, onImageClick }: Props) => {
                     />
                 );
 
-            case 'video':
-                return <video className={classes.fileImage} src={src} />;
+            // case 'video':
+            //     getData();
+            //     return <video className={classes.fileImage} src={src} />;
 
             case 'other':
                 return (

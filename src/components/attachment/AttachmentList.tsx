@@ -14,16 +14,16 @@ const AttachmentList = ({ onRemoveClick, files, onImageClick }: Props) => {
         <>
             <div className={classes.filesArea}>
                 {files.map((el, i) => {
-                    if (el)
-                        return (
-                            <Attachment
-                                key={i}
-                                onClick={onRemoveClick}
-                                data={el}
-                                index={i}
-                                onImageClick={onImageClick}
-                            />
-                        );
+                    // if (!el || el === null || !el?.original) return <></>;
+                    return (
+                        <Attachment
+                            key={i}
+                            onClick={onRemoveClick}
+                            data={el}
+                            index={i}
+                            onImageClick={onImageClick}
+                        />
+                    );
                 })}
             </div>
         </>

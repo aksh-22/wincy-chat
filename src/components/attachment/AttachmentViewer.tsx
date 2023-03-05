@@ -46,7 +46,7 @@ const AttachmentViewer = ({ files, onClose }: Props) => {
             <IconButton onClick={onClose} className={classes.closeIcon}>
                 <CloseIcon color='info' />
             </IconButton>
-            {images.length && <ImageGallery infinite={false} items={images} />}
+            {images.length && <ImageGallery infinite={false} items={files} />}
         </div>,
         document.body
     );

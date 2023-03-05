@@ -30,6 +30,8 @@ export class KitChat {
     userId;
     teamId = 'PAIRROXZ';
     isSetupCompleted = false;
+    attachmentAdd = [];
+    attachmentRemove = [];
 
     constructor(apiKey) {
         this.apiKey = apiKey;
@@ -147,6 +149,25 @@ export class KitChat {
                     // this.socket.off('MESSAGE_RECEIVED');
                 }
             });
+            this.socket.on('ATTACHMENT_ADD', ({ channelId, attachments }) => {
+                if (this.attachmentAdd.length) {
+                    this.attachmentAdd.forEach((el) => {
+                        el({ channelId, attachments });
+                    });
+                }
+            });
+
+            this.socket.on(
+                'ATTACHMENT_REMOVE',
+                ({ channelId, attachments }) => {
+                    if (this.attachmentRemove.length) {
+                        this.attachmentRemove.forEach((el) => {
+                            el({ channelId, attachments });
+                        });
+                    }
+                }
+            );
+
             this.socket.on('CHANNEL_CHANGE', (channel, type) => {
                 if (type === 'ADDED') {
                     if (this.channelAdded != null) {
@@ -200,6 +221,14 @@ export class KitChat {
 
     onChannelMessageCountCHange(func) {
         this.messageCount.push(func);
+    }
+
+    onAttachmentAdd(func) {
+        this.attachmentAdd.push(func);
+    }
+
+    onAttachmentRemove(func) {
+        this.attachmentRemove.push(func);
     }
 
     async updateOneSignalIds(playerId, deviceId) {
@@ -546,34 +575,46 @@ export class KitChat {
         }
     }
 
-    async messageAdd(body) {
-        const config = {
-            headers: {
-                Accept: 'application/json, text/plain, */*',
-                'Content-Type': 'multipart/form-data',
-                Authorization: `Bearer ${this.userToken}`,
-                'x-api-key': this.apiKey,
-            },
-        };
+    async messageAdd(dataToSend) {
         try {
-            const data = await axios.post(
-                `${SERVER_URL}/chat/channel/message/add`,
-                body,
-                config
+            const data = await this.__standardRest(
+                `chat/channel/message/add`,
+                'POST',
+                dataToSend
             );
-            // const data = await this.__standardRest(
-            //     `chat/channel/message/add`,
-            //     'POST',
-            //     body,
-            //     true
-            // );
+            // if (channel.type === 'CHANNEL_PUBLIC') {
+            //     this.socket
+            //         .to(`TEAM-${channel.teamId}`)
+            //         .emit('CHANNEL_CHANGE', channel, channel.type);
+            // } else {
+            //     channel.participants.forEach((element) => {
+            //         this.socket
+            //             .to(`USER-${element._id}`)
+            //             .emit('CHANNEL_CHANGE', channel, channel.type);
+            //     });
+            // }
             return data;
         } catch (error) {
             console.error('Error at Kitchat messageAdd:', error.message);
         }
     }
 
-    async addAttachments(body) {
+    async removeAttachment(channelId, url) {
+        try {
+            const data = await this.__standardRest(
+                `chat/channel/message/remove/attachment/${channelId}`,
+                'POST',
+                {
+                    url,
+                }
+            );
+            return data;
+        } catch (error) {
+            console.error('Error at Kitchat removeAttachment:', error.message);
+        }
+    }
+
+    async addAttachments(body, channelId, progressCallback) {
         const config = {
             headers: {
                 Accept: 'application/json, text/plain, */*',
@@ -581,10 +622,11 @@ export class KitChat {
                 Authorization: `Bearer ${this.userToken}`,
                 'x-api-key': this.apiKey,
             },
+            onUploadProgress: progressCallback,
         };
         try {
             const data = await axios.post(
-                `${SERVER_URL}/chat/channel/message/upload/attachment`,
+                `${SERVER_URL}/chat/channel/message/upload/attachment/${channelId}`,
                 body,
                 config
             );

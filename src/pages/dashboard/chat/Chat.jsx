@@ -40,12 +40,15 @@ export class Chat extends Component {
             attachmentIndex: null,
             messageIndexes: null,
         },
+        channelId: '',
     };
 
     constructor(props) {
         super(props);
         this.onMenuItemPress = this.onMenuItemPress.bind(this);
         this.onFilesAdded = this.onFilesAdded.bind(this);
+        this.removeImage = this.removeImage.bind(this);
+        this.getAttachmentUrl = this.getAttachmentUrl.bind(this);
         this.removeImage = this.removeImage.bind(this);
     }
 
@@ -57,33 +60,31 @@ export class Chat extends Component {
     //     console.log('unmount');
     // }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
+        const { channelId } = this.state;
         if (this.props.channel?._id !== prevProps.channel?._id) {
             this.loadMessages();
+        }
+        if (prevProps.channel?._id !== channelId) {
+            this.setState({ channelId: this.props.channel._id });
+
+            this.setState({
+                uploadedFiles: [...this.props.channel.attachments],
+            });
         }
     }
 
     msgSend() {
         const kc = KitChat.getInstance();
-        let body;
+        let body = {
+            channelId: this.props.channel._id,
+            content: this.state.text,
+        };
+
         if (this.state.uploadedFiles.length) {
-            body = new FormData();
-            body.append('channelId', this.props.channel._id);
-            body.append('content', this.state.text);
-            this.state.uploadedFiles.forEach((file) => {
-                body.append(`attachments`, file, file.name);
-            });
-            kc.messageAdd(body).then(() => {
-                this.setState({ uploadedFiles: [] });
-            });
-            this.setState({ text: '' });
-        } else {
-            body = {
-                channelId: this.props.channel._id,
-                content: this.state.text,
-            };
-            kc.messageAdd(body);
+            body.attachments = this.state.uploadedFiles;
         }
+        kc.messageAdd(body);
         this.setState({ text: '' });
     }
 
@@ -152,6 +153,45 @@ export class Chat extends Component {
         this.setState({ updateMessageId: '' });
     };
 
+    onAttachmentAdd = (files) => {
+        const { uploadedFiles } = this.state;
+        if (files.channelId == this.props.channel._id) {
+            const prevLength = uploadedFiles?.length ?? 0;
+            uploadedFiles.splice(
+                uploadedFiles?.length - files.attachments.length,
+                files.attachments.length
+            );
+            if (uploadedFiles.length) {
+                this.setState({
+                    uploadedFiles: [...uploadedFiles, ...files.attachments],
+                });
+            } else {
+                this.setState({ uploadedFiles: [...files.attachments] });
+            }
+        }
+        // else {
+        //     this.props.setChannel({
+        //         type: 'ADD_ATTACHMENTS',
+        //         payload: files,
+        //     });
+        // }
+        this.props.setChannel({
+            type: 'ADD_ATTACHMENTS',
+            payload: files,
+        });
+    };
+    onAttachmentRemove = (files) => {
+        const { uploadedFiles } = this.state;
+        this.props.setChannel({
+            type: 'REMOVE_ATTACHMENTS',
+            payload: files,
+        });
+        // this.props.setChannel({
+        //     type: 'ADD_ATTACHMENTS',
+        //     payload: files,
+        // });
+    };
+
     async setupKitChat() {
         const kc = KitChat.getInstance();
         kc.onMessageReceived((msg) => {
@@ -164,6 +204,8 @@ export class Chat extends Component {
         kc.onChannelMessageUpdate((msg) => {
             this.onMsgUpdate(msg);
         });
+        kc.onAttachmentAdd(this.onAttachmentAdd);
+        kc.onAttachmentRemove(this.onAttachmentRemove);
         this.loadMessages();
         // kc.readMessage(this.props.channel._id);
     }
@@ -177,20 +219,45 @@ export class Chat extends Component {
         }
     }
 
-    onFilesAdded(files) {
+    async onFilesAdded(files) {
         const { uploadedFiles } = this.state;
+
         if (uploadedFiles.length) {
             this.setState({ uploadedFiles: [...uploadedFiles, ...files] });
         } else {
             this.setState({ uploadedFiles: [...files] });
         }
+        // await this.getAttachmentUrl(files, uploadedFiles);
     }
 
-    removeImage = (index) => {
+    async getAttachmentUrl(files, prevFiles) {
+        const kc = KitChat.getInstance();
+        const body = new FormData();
+        // body.append('channelId', this.props.channel._id);
+        files.forEach((file) => {
+            body.append(`attachments`, file, file.name);
+        });
+        await kc.addAttachments(
+            body,
+            this.props.channel._id,
+            this.getUploadProgress
+        );
+    }
+
+    async removeImage(index) {
         const { uploadedFiles } = this.state;
         const temp = [...uploadedFiles];
         temp.splice(index, 1);
         this.setState({ uploadedFiles: [...temp] });
+        const kc = KitChat.getInstance();
+        await kc.removeAttachment(
+            this.props.channel._id,
+            this.state.uploadedFiles[index].original
+        );
+    }
+
+    getUploadProgress = (progressEvent) => {
+        console.log(progressEvent.loaded);
     };
 
     onImageClick = (attachmentIndex, msgIndex) => {
@@ -292,8 +359,13 @@ export class Chat extends Component {
 }
 
 const mapStateToProps = (state) => {
+    const id = state?.channelReducer?.selectedChannel?._id;
+    const index = state?.channelReducer.channelList.findIndex(
+        (el) => el._id === id
+    );
+    const selectedChannel = state?.channelReducer.channelList[index];
     return {
-        channel: state?.channelReducer?.selectedChannel,
+        channel: selectedChannel,
     };
 };
 

@@ -14,6 +14,7 @@ const initialState: Props = {
 const channelReducer = (state = initialState, action: any) => {
     let index;
     let tempChannelList = [];
+    let tempSelectedChannel: any = {};
     switch (action.type) {
         case 'SET_CHANNEL':
             return {
@@ -68,6 +69,45 @@ const channelReducer = (state = initialState, action: any) => {
                         : state.selectedChannel,
             };
 
+        case 'ADD_ATTACHMENTS':
+            tempChannelList = state.channelList;
+            tempSelectedChannel = { ...state?.selectedChannel };
+            index = tempChannelList.findIndex(
+                (el) => el._id === action.payload.channelId
+            );
+            tempChannelList[index].attachments.push(
+                ...action.payload.attachments
+            );
+
+            if (state?.selectedChannel?._id === action.payload.channelId) {
+                tempSelectedChannel.attachments.push(
+                    ...action.payload.attachments
+                );
+            }
+
+            return {
+                ...state,
+                channelList: [...tempChannelList],
+                selectedChannel: tempSelectedChannel,
+            };
+
+        case 'REMOVE_ATTACHMENTS':
+            tempChannelList = state.channelList;
+
+            // tempSelectedChannel = { ...state?.selectedChannel };
+            index = tempChannelList.findIndex(
+                (el) => el._id === action.payload.channelId
+            );
+            const attachIndex = tempChannelList[index].attachments.findIndex(
+                (el: any) => el.original === action.payload.attachments
+            );
+            tempChannelList[index].attachments.splice(attachIndex, 1);
+
+            return {
+                ...state,
+                channelList: [...tempChannelList],
+            };
+
         case 'UPDATE_COUNT':
             let channelListWithUpdateCount = state.channelList.map((el) => {
                 if (el._id === action.payload._id) {
@@ -80,7 +120,7 @@ const channelReducer = (state = initialState, action: any) => {
                 }
             });
 
-            let tempSelectedChannel = { ...state?.selectedChannel };
+            tempSelectedChannel = { ...state?.selectedChannel };
 
             if (state?.selectedChannel?._id === action.payload._id) {
                 tempSelectedChannel = {
